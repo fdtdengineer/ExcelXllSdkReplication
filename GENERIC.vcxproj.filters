@@ -5,45 +5,36 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
     <Filter Include="Resource Files">
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
     </Filter>
-    <Filter Include="Source Files\timestamp">
-      <UniqueIdentifier>{5adaeedc-db81-45ad-9d07-08fa25e1d5da}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="EXAMPLE.C">
+    <ClCompile Include="GENERIC.C">
       <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\Distributions.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sandbox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="timestamp.cpp">
-      <Filter>Source Files\timestamp</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="makefile">
       <Filter>Source Files</Filter>
     </None>
-    <None Include="EXAMPLE.DEF">
+    <None Include="GENERIC.DEF">
       <Filter>Resource Files</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Distributions.h">
-      <Filter>Source Files</Filter>
+    <ClInclude Include="GENERIC.H">
+      <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="sandbox.hpp">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="timestamp.hpp">
-      <Filter>Source Files\timestamp</Filter>
-    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="GENERIC.RC">
+      <Filter>Resource Files</Filter>
+    </ResourceCompile>
   </ItemGroup>
 </Project>

@@ -24,7 +24,11 @@
 ** rgFuncsRows define the number of rows in the table. The
 ** dimension [3] represents the number of columns in the table.
 */
-#define rgFuncsRows 29
+
+// old format (dummy)
+/*
+
+#define rgFuncsRows 100
 
 static LPWSTR rgFuncs[rgFuncsRows][7] = {
 	{L"CallerExample",				L"I", L"CallerExample"},
@@ -55,8 +59,164 @@ static LPWSTR rgFuncs[rgFuncsRows][7] = {
 	{L"xlStackExample",				L"I", L"xlStackExample"},
 	{L"xlUDFExample",				L"I", L"xlUDFExample"},
 	{L"InternationalExample",		L"I", L"InternationalExample"},
-	{L"CalcCircum",					L"BB", L"CalcCircum"}
+	{L"CalcCircum",					L"BB", L"CalcCircum"},
+	{L"ND",							L"BB", L"ND"},
+	{L"CND",						L"BB", L"CND"},
+	{L"CBND",						L"BBB", L"CBND"},
+
 };
+*/
+
+/*
+** User defined
+*/
+
+// The definition of the "XLLRegisterInfo" class
+struct XLLRegisterInfo
+{
+	/**
+		Name of the procedure to be registered.
+	*/
+	LPWSTR procedure;
+	/**
+		The type text see pxTypeText here: http://msdn.microsoft.com/en-us/library/bb687900.aspx
+	*/
+	LPWSTR typeText;
+	/**
+		Name of the function in Excel.
+	*/
+	LPWSTR functionText;
+	/**
+		String of Letters that represent arguments/types. See pxArgumentText
+		here: http://msdn.microsoft.com/en-us/library/bb687900.aspx
+	*/
+	LPWSTR argumentText;
+	/**
+		Type of function. 0 - Macro sheet equivalent, 1 - Worksheet Functions, 2 - Commands.
+		When in doubt use 1;
+	 */
+	int macroType;
+
+	/**
+		Name of the category to add the function to.
+	*/
+	LPWSTR categoryName;
+
+	/**
+		Commands only.
+	*/
+	LPWSTR shortcutText;
+
+	/**
+		Reference to a help file (.chm or .hlp).
+		Use form: filepath!HelpContextID or http://address/path_to_file_in_site!0
+	*/
+	LPWSTR helpTopic;
+	/**
+		String that describes the function in the function wizard.
+	*/
+	LPWSTR functionHelp;
+
+	/**
+	  * Number of descriptions in argumentHelp.
+	  */
+	int argumentCount;
+
+	/**
+		Array of Argument help strings.
+	*/
+	LPWSTR argumentHelp[15];
+};
+
+VOID RegisterHelper(struct XLLRegisterInfo registryInfo)
+{
+	static XLOPER12 xDLL, xRegId;
+	static LPXLOPER12 args[260];
+	int count;
+	int i;
+
+	count = 10 + registryInfo.argumentCount;
+
+	/*
+		Get the name of the DLL.
+	*/
+	Excel12f(xlGetName, &xDLL, 0);
+
+	if (registryInfo.argumentCount == 0)
+	{
+		Excel12f(xlfRegister, 0, count,
+			(LPXLOPER12)&xDLL, /* moduleText */
+			(LPXLOPER12)TempStr12(registryInfo.procedure),
+			(LPXLOPER12)TempStr12(registryInfo.typeText),
+			(LPXLOPER12)TempStr12(registryInfo.functionText),
+			(LPXLOPER12)TempStr12(registryInfo.argumentText),
+			(LPXLOPER12)TempInt12
+			(registryInfo.macroType), /* function listed in function wizard */
+			(LPXLOPER12)TempStr12(registryInfo.categoryName),
+			(LPXLOPER12)TempStr12(L""), /* shortcut text */
+			(LPXLOPER12)TempStr12(registryInfo.helpTopic),
+			(LPXLOPER12)TempStr12(registryInfo.functionHelp));
+	}
+	else
+	{
+		count = 0;
+		args[count++] = (LPXLOPER12)&xDLL; /* moduleText */
+		args[count++] = (LPXLOPER12)TempStr12(registryInfo.procedure);
+		args[count++] = (LPXLOPER12)TempStr12(registryInfo.typeText);
+		args[count++] = (LPXLOPER12)TempStr12(registryInfo.functionText);
+		args[count++] = (LPXLOPER12)TempStr12(registryInfo.argumentText);
+		args[count++] =
+			(LPXLOPER12)TempInt12(registryInfo.macroType); /* function listed in function wizard */
+		args[count++] = (LPXLOPER12)TempStr12(registryInfo.categoryName);
+		args[count++] = (LPXLOPER12)TempStr12(L""); /* shortcut text */
+		args[count++] = (LPXLOPER12)TempStr12(registryInfo.helpTopic);
+		args[count++] = (LPXLOPER12)TempStr12(registryInfo.functionHelp);
+
+		for (i = 0; i < registryInfo.argumentCount; i++)
+		{
+			args[count++] = (LPXLOPER12)TempStr12(registryInfo.argumentHelp[i]);
+		}
+
+		Excel12v(xlfRegister, 0, count,
+			args);
+	}
+}
+
+// See the following site for the information on how to specify the type of variable
+// https://docs.microsoft.com/ja-jp/office/client-developer/excel/data-types-used-by-excel
+
+struct XLLRegisterInfo xllrgFuncs[] =
+{
+	{
+		L"calcCircum" /* procedure */, L"BB" /*typeText*/,
+		/* functionText */ L"calcCircum",
+		/*argumentText*/ L"Radius", 1, L"Examples",
+		L"" /*shortcutText*/, L"" /*helpTopic*/,
+		L"Calculates the circumferance of a circle."
+		/* functionHelp */, 1 /*argCount */,
+		{L"Radius of the circle. "
+	/*argumentHelp1 pad with space, Excel bug*/},
+	},
+
+	{L"genDummyArray", L"Q", L"genDummyArray", L"x", 1, L"Dummy",	L"", L"", L"Returns an array on the sheet.", 1, {L"argument "}},
+	{L"updateArray", L"QQ", L"updateArray", L"x", 1, L"Dummy",	L"", L"", L"Multiples the array from the sheet twice and returns.", 1, {L"argument "}},
+	
+	{L"registerObjMemory", L"BB", L"registerObjMemory", L"x", 1, L"Dummy",	L"", L"", L"Multiples the array from the sheet twice and returns.", 1, {L"argument "}},
+	{L"getObjMemory", L"B", L"getObjMemory", L"x", 1, L"Dummy",	L"", L"", L"Multiples the array from the sheet twice and returns.", 1, {L"argument "}},
+
+	{L"hashRegister", L"CB", L"hashRegister", L"x", 1, L"Dummy",	L"", L"", L"temp.", 1, {L"argument "}},
+	{L"hashGet", L"BC", L"hashGet", L"x", 1, L"Dummy",	L"", L"", L"temp.", 1, {L"argument "}},
+
+	{L"ND", L"BB", L"ND", L"x", 1, L"Dummy",	L"", L"", L"Returns the probability density function of normal distribution.", 1, {L"argument "}},
+	{L"CND", L"BB", L"CND", L"x", 1, L"Dummy",	L"", L"", L"Returns the cummulative distribution function of normal distribution.", 1, {L"argument "}},
+	{L"CBND", L"BBBB", L"CBND", L"x1,x2,correlation", 1, L"Dummy",	L"", L"", L"Returns the bi cummulative bivariate distribution function of normal distribution.", 3, {L"argument1",L"argument2",L"correlation "}},
+
+
+	{ NULL }
+};
+
+
+
 
 /*
 ** DllMain
@@ -156,14 +316,20 @@ __declspec(dllexport) int WINAPI xlAutoOpen(void)
 
 	Excel12f(xlGetName, &xDLL, 0);
 
-        for (i=0;i<rgFuncsRows;i++) 
-		{
-			Excel12f(xlfRegister, 0, 4,
-				(LPXLOPER12)&xDLL,
-				(LPXLOPER12)TempStr12(rgFuncs[i][0]),
-				(LPXLOPER12)TempStr12(rgFuncs[i][1]),
-				(LPXLOPER12)TempStr12(rgFuncs[i][2]));
-		}
+	// original definition
+	/*
+    for (i=0;i<rgFuncsRows;i++) 
+	{
+		Excel12f(xlfRegister, 0, 4,
+			(LPXLOPER12)&xDLL,
+			(LPXLOPER12)TempStr12(rgFuncs[i][0]),
+			(LPXLOPER12)TempStr12(rgFuncs[i][1]),
+			(LPXLOPER12)TempStr12(rgFuncs[i][2]));
+	}
+	*/
+
+	for (i = 0; xllrgFuncs[i].procedure != NULL; i++)
+		RegisterHelper(xllrgFuncs[i]);
 
 	/* Free the XLL filename */
 	Excel12f(xlFree, 0, 1, (LPXLOPER12)&xDLL);
@@ -171,6 +337,7 @@ __declspec(dllexport) int WINAPI xlAutoOpen(void)
 	return 1;
 }
 
+#if(0)
 /*
 ** xlAutoClose
 **
@@ -200,6 +367,8 @@ __declspec(dllexport) int WINAPI xlAutoOpen(void)
 **
 ** xlAutoClose should return 1.
 */
+
+#if(0)
 __declspec(dllexport) int WINAPI xlAutoClose(void)
 {
 	int i;
@@ -214,6 +383,7 @@ __declspec(dllexport) int WINAPI xlAutoClose(void)
 
 	return 1;
 }
+#endif
 
 ///***************************************************************************
 // lpwstricmp()
@@ -283,6 +453,8 @@ int lpwstricmp(LPWSTR s, LPWSTR t)
 **                          if the function could not be
 **                          registered.
 */
+
+#if(0)
 __declspec(dllexport) LPXLOPER12 WINAPI xlAutoRegister12(LPXLOPER12 pxName)
 {
 	static XLOPER12 xDLL, xRegId;
@@ -325,6 +497,7 @@ __declspec(dllexport) LPXLOPER12 WINAPI xlAutoRegister12(LPXLOPER12 pxName)
 
 	return (LPXLOPER12)&xRegId;
 }
+#endif
 
 /*
 ** xlAutoAdd
@@ -988,7 +1161,9 @@ __declspec(dllexport) int WINAPI InternationalExample()
 **
 */
 
-__declspec(dllexport) double WINAPI CalcCircum(double pdRadius)
+#endif
+
+__declspec(dllexport) double WINAPI calcCircum(double pdRadius)
 {
 	return pdRadius * 6.283185308;
 }
